@@ -1,181 +1,271 @@
--- 2. Création des tables de référence
-
-CREATE TABLE Profils_Adherent (
-                                  id_profil SERIAL PRIMARY KEY,
-                                  nom_profil VARCHAR(100) NOT NULL UNIQUE,
-                                  quota_emprunts_simultanes INT NOT NULL DEFAULT 3,
-                                  duree_pret_domicile_jours INT NOT NULL DEFAULT 21,
-                                  duree_pret_sur_place_heures INT NOT NULL DEFAULT 3,
-                                  peut_prolonger_pret BOOLEAN NOT NULL DEFAULT TRUE,
-                                  jours_penalite_par_retard INT NOT NULL DEFAULT 1
+create table profils_adherent
+(
+    id_profil                   serial
+        primary key,
+    nom_profil                  varchar(100)         not null
+        unique,
+    quota_emprunts_simultanes   integer default 3    not null,
+    duree_pret_domicile_jours   integer default 21   not null,
+    duree_pret_sur_place_heures integer default 3    not null,
+    peut_prolonger_pret         boolean default true not null,
+    jours_penalite_par_retard   integer default 1    not null
 );
 
-CREATE TABLE Auteurs (
-                         id_auteur SERIAL PRIMARY KEY,
-                         nom VARCHAR(100) NOT NULL,
-                         prenom VARCHAR(100)
+alter table profils_adherent
+    owner to postgres;
+
+create table auteurs
+(
+    id_auteur serial
+        primary key,
+    nom       varchar(100) not null,
+    prenom    varchar(100)
 );
 
-CREATE TABLE Editeurs (
-                          id_editeur SERIAL PRIMARY KEY,
-                          nom VARCHAR(150) NOT NULL UNIQUE
+alter table auteurs
+    owner to postgres;
+
+create table editeurs
+(
+    id_editeur serial
+        primary key,
+    nom        varchar(150) not null
+        unique
 );
 
-CREATE TABLE Categories (
-                            id_categorie SERIAL PRIMARY KEY,
-                            nom VARCHAR(100) NOT NULL UNIQUE
+alter table editeurs
+    owner to postgres;
+
+create table categories
+(
+    id_categorie serial
+        primary key,
+    nom          varchar(100) not null
+        unique
 );
 
-CREATE TABLE Jours_Feries (
-                              date_ferie DATE PRIMARY KEY,
-                              description VARCHAR(255)
+alter table categories
+    owner to postgres;
+
+create table jours_feries
+(
+    date_ferie  date not null
+        primary key,
+    description varchar(255)
 );
 
+alter table jours_feries
+    owner to postgres;
 
-
-CREATE TABLE Statuts_Reservation (
-                                     id_statut SERIAL PRIMARY KEY,
-                                     code_statut VARCHAR(20) NOT NULL UNIQUE
+create table statuts_reservation
+(
+    id_statut   serial
+        primary key,
+    code_statut varchar(20) not null
+        unique
 );
 
--- 3. Création des tables principales
-CREATE TABLE Livres (
-                        id_livre SERIAL PRIMARY KEY,
-                        titre VARCHAR(255) NOT NULL,
-                        isbn VARCHAR(20) UNIQUE,
-                        annee_publication INT,
-                        resume TEXT,
-                        id_editeur INT,
-                        FOREIGN KEY (id_editeur) REFERENCES Editeurs(id_editeur)
+alter table statuts_reservation
+    owner to postgres;
+
+create table livres
+(
+    id_livre          serial
+        primary key,
+    titre             varchar(255) not null,
+    isbn              varchar(20)
+        unique,
+    annee_publication integer,
+    resume            text,
+    id_editeur        integer
+        references editeurs
 );
 
-CREATE TABLE Utilisateurs (
-                              id_utilisateur SERIAL PRIMARY KEY,
-                              email VARCHAR(255) NOT NULL UNIQUE,
-                              mot_de_passe_hash VARCHAR(255) NOT NULL,
-                              date_creation TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+alter table livres
+    owner to postgres;
+
+create table utilisateurs
+(
+    id_utilisateur    serial
+        primary key,
+    email             varchar(255)                        not null
+        unique,
+    mot_de_passe_hash varchar(255)                        not null,
+    date_creation     timestamp default CURRENT_TIMESTAMP not null
 );
 
--- 4. Création des tables liées aux utilisateurs
-CREATE TABLE Adherents (
-                           id_adherent SERIAL PRIMARY KEY,
-                           id_utilisateur INT UNIQUE,
-                           nom VARCHAR(100) NOT NULL,
-                           prenom VARCHAR(100) NOT NULL,
-                           date_naissance DATE NOT NULL,
-                           date_inscription DATE NOT NULL DEFAULT CURRENT_DATE,
-                           id_profil INT NOT NULL,
-                           FOREIGN KEY (id_utilisateur) REFERENCES Utilisateurs(id_utilisateur),
-                           FOREIGN KEY (id_profil) REFERENCES Profils_Adherent(id_profil)
+alter table utilisateurs
+    owner to postgres;
+
+create table adherents
+(
+    id_adherent      serial
+        primary key,
+    id_utilisateur   integer
+        unique
+        references utilisateurs,
+    nom              varchar(100)              not null,
+    prenom           varchar(100)              not null,
+    telephone        varchar(20),
+    date_inscription date default CURRENT_DATE not null,
+    id_profil        integer                   not null
+        references profils_adherent,
+    date_naissance   date
 );
 
-CREATE TABLE Bibliothecaires (
-                                 id_bibliothecaire SERIAL PRIMARY KEY,
-                                 id_utilisateur INT UNIQUE NOT NULL,
-                                 nom VARCHAR(100) NOT NULL,
-                                 prenom VARCHAR(100) NOT NULL,
-                                 matricule VARCHAR(50) UNIQUE NOT NULL,
-                                 FOREIGN KEY (id_utilisateur) REFERENCES Utilisateurs(id_utilisateur)
+alter table adherents
+    owner to postgres;
+
+create table bibliothecaires
+(
+    id_bibliothecaire serial
+        primary key,
+    id_utilisateur    integer      not null
+        unique
+        references utilisateurs,
+    nom               varchar(100) not null,
+    prenom            varchar(100) not null
 );
 
--- 5. Création des tables de liaison
-CREATE TABLE Livres_Auteurs (
-                                id_livre INT NOT NULL,
-                                id_auteur INT NOT NULL,
-                                PRIMARY KEY (id_livre, id_auteur),
-                                FOREIGN KEY (id_livre) REFERENCES Livres(id_livre) ON DELETE CASCADE,
-                                FOREIGN KEY (id_auteur) REFERENCES Auteurs(id_auteur) ON DELETE CASCADE
+alter table bibliothecaires
+    owner to postgres;
+
+create table livres_auteurs
+(
+    id_livre  integer not null
+        references livres
+            on delete cascade,
+    id_auteur integer not null
+        references auteurs
+            on delete cascade,
+    primary key (id_livre, id_auteur)
 );
 
-CREATE TABLE Livres_Categories (
-                                   id_livre INT NOT NULL,
-                                   id_categorie INT NOT NULL,
-                                   PRIMARY KEY (id_livre, id_categorie),
-                                   FOREIGN KEY (id_livre) REFERENCES Livres(id_livre) ON DELETE CASCADE,
-                                   FOREIGN KEY (id_categorie) REFERENCES Categories(id_categorie) ON DELETE CASCADE
+alter table livres_auteurs
+    owner to postgres;
+
+create table livres_categories
+(
+    id_livre     integer not null
+        references livres
+            on delete cascade,
+    id_categorie integer not null
+        references categories
+            on delete cascade,
+    primary key (id_livre, id_categorie)
 );
 
--- 6. Création des tables de transactions
-CREATE TABLE Exemplaires (
-                             id_exemplaire SERIAL PRIMARY KEY,
-                             id_livre INT NOT NULL,
-                             quantite INT NOT NULL,
-                             FOREIGN KEY (id_livre) REFERENCES Livres(id_livre) ON DELETE CASCADE
+alter table livres_categories
+    owner to postgres;
+
+create table exemplaires
+(
+    id_exemplaire serial
+        primary key,
+    id_livre      integer not null
+        references livres
+            on delete cascade,
+    quantite      integer not null
 );
 
-CREATE TABLE Abonnements (
-                             id_abonnement SERIAL PRIMARY KEY,
-                             id_adherent INT NOT NULL,
-                             date_debut DATE NOT NULL,
-                             date_fin DATE NOT NULL,
-                             FOREIGN KEY (id_adherent) REFERENCES Adherents(id_adherent)
+alter table exemplaires
+    owner to postgres;
+
+create table abonnements
+(
+    id_abonnement serial
+        primary key,
+    id_adherent   integer not null
+        references adherents,
+    date_debut    date    not null,
+    date_fin      date    not null
 );
 
-CREATE TABLE Droits_Emprunt_Specifiques (
-                                            id_droit SERIAL PRIMARY KEY,
-                                            id_livre INT NOT NULL,
-                                            id_profil INT NOT NULL,
-                                            age INT,
-                                            emprunt_domicile_autorise BOOLEAN NOT NULL DEFAULT TRUE,
-                                            UNIQUE (id_livre, id_profil),
-                                            FOREIGN KEY (id_livre) REFERENCES Livres(id_livre) ON DELETE CASCADE,
-                                            FOREIGN KEY (id_profil) REFERENCES Profils_Adherent(id_profil) ON DELETE CASCADE
+alter table abonnements
+    owner to postgres;
+
+create table droits_emprunt_specifiques
+(
+    id_droit                  serial
+        primary key,
+    id_livre                  integer              not null
+        references livres
+            on delete cascade,
+    id_profil                 integer              not null
+        references profils_adherent
+            on delete cascade,
+    emprunt_domicile_autorise boolean default true not null,
+    age                       integer,
+    unique (id_livre, id_profil)
 );
 
-CREATE TABLE Emprunts (
-                          id_emprunt SERIAL PRIMARY KEY,
-                          id_exemplaire INT NOT NULL,
-                          id_adherent INT NOT NULL,
-                          date_emprunt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                          date_retour_prevue DATE NOT NULL,
-                          date_retour_reelle DATE,
-                          prolongations INT DEFAULT 0,
-                          FOREIGN KEY (id_exemplaire) REFERENCES Exemplaires(id_exemplaire),
-                          FOREIGN KEY (id_adherent) REFERENCES Adherents(id_adherent)
+alter table droits_emprunt_specifiques
+    owner to postgres;
+
+create table emprunts
+(
+    id_emprunt         serial
+        primary key,
+    id_exemplaire      integer                             not null
+        references exemplaires,
+    id_adherent        integer                             not null
+        references adherents,
+    date_emprunt       timestamp default CURRENT_TIMESTAMP not null,
+    date_retour_prevue date                                not null,
+    date_retour_reelle date,
+    prolongations      integer   default 0
 );
 
-CREATE TABLE Reservations (
-                              id_reservation SERIAL PRIMARY KEY,
-                              id_livre INT NOT NULL,
-                              id_adherent INT NOT NULL,
-                              id_statut INT NOT NULL DEFAULT 1,
-                              date_demande TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                              date_expiration DATE NOT NULL,
-                              FOREIGN KEY (id_livre) REFERENCES Livres(id_livre) ON DELETE CASCADE,
-                              FOREIGN KEY (id_adherent) REFERENCES Adherents(id_adherent) ON DELETE CASCADE,
-                              FOREIGN KEY (id_statut) REFERENCES Statuts_Reservation(id_statut)
+alter table emprunts
+    owner to postgres;
+
+create table reservations
+(
+    id_reservation  serial
+        primary key,
+    id_livre        integer                             not null
+        references livres
+            on delete cascade,
+    id_adherent     integer                             not null
+        references adherents
+            on delete cascade,
+    id_statut       integer   default 1                 not null
+        references statuts_reservation,
+    date_demande    timestamp default CURRENT_TIMESTAMP not null,
+    date_expiration date                                not null
 );
 
+alter table reservations
+    owner to postgres;
 
-
-CREATE TABLE Mvt_Reservation (
-                                 id_mvt_reservation SERIAL PRIMARY KEY,
-                                 id_reservation INT NOT NULL,
-                                 id_statut_nouveau INT NOT NULL, -- Le statut vers lequel la réservation a transité
-                                 date_mouvement TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                 FOREIGN KEY (id_reservation) REFERENCES Reservations(id_reservation) ON DELETE CASCADE,
-                                 FOREIGN KEY (id_statut_nouveau) REFERENCES Statuts_Reservation(id_statut)
+create table mvt_reservation
+(
+    id_mvt_reservation serial
+        primary key,
+    id_reservation     integer                             not null
+        references reservations
+            on delete cascade,
+    id_statut_nouveau  integer                             not null
+        references statuts_reservation,
+    date_mouvement     timestamp default CURRENT_TIMESTAMP not null
 );
 
+alter table mvt_reservation
+    owner to postgres;
 
-
-CREATE TABLE Penalites (
-                           id_penalite SERIAL PRIMARY KEY,
-                           id_emprunt INT NOT NULL,
-                           id_adherent INT NOT NULL,
-                           date_debut DATE NOT NULL,
-                           date_fin DATE NOT NULL,
-                           raison VARCHAR(255),
-                           FOREIGN KEY (id_emprunt) REFERENCES Emprunts(id_emprunt),
-                           FOREIGN KEY (id_adherent) REFERENCES Adherents(id_adherent)
+create table penalites
+(
+    id_penalite serial
+        primary key,
+    id_emprunt  integer not null
+        references emprunts,
+    id_adherent integer not null
+        references adherents,
+    date_debut  date    not null,
+    date_fin    date    not null,
+    raison      varchar(255)
 );
 
-INSERT INTO Profils_Adherent (
-    nom_profil, quota_emprunts_simultanes, duree_pret_domicile_jours,
-    duree_pret_sur_place_heures, peut_prolonger_pret, jours_penalite_par_retard
-) VALUES
-      ('Étudiant', 3, 21, 3, TRUE, 1),
-      ('Professeur', 6, 30, 4, TRUE, 1),
-      ('Invité', 1, 7, 2, FALSE, 2),
-      ('Chercheur', 10, 60, 6, TRUE, 1),
-      ('Personnel', 4, 15, 3, TRUE, 1);
+alter table penalites
+    owner to postgres;
+
