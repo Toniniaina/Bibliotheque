@@ -50,8 +50,6 @@ public class PenaliteService {
         if (statut != 2 && statut != 4) {
             throw new IllegalArgumentException("Cet emprunt n'est pas retourné ou perdu.");
         }
-
-        // Date de retour effective du livre
         LocalDate dateRetourReelle = dernier.getDateMouvement()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate();
@@ -64,8 +62,6 @@ public class PenaliteService {
             throw new IllegalArgumentException("La date de retour réelle (" + dateRetourReelle +
                     ") n'est pas postérieure à la date de retour prévue (" + dateRetourPrevue + ").");
         }
-
-        // Vérifier s'il y a des pénalités en cours pour cet adhérent
         LocalDate dateDebutPenalite = dateRetourReelle;
 
         if (dto.getAdherent() != null) {
@@ -77,8 +73,6 @@ public class PenaliteService {
                         p.getIdAdherent().getId().equals(dto.getAdherent().getId())) {
 
                     LocalDate finPenalite = p.getDateDebut().plusDays(p.getJour());
-
-                    // Si la pénalité se termine après aujourd'hui, elle est encore active
                     if (finPenalite.isAfter(LocalDate.now())) {
                         if (dateFin == null || finPenalite.isAfter(dateFin)) {
                             dateFin = finPenalite;
@@ -86,14 +80,11 @@ public class PenaliteService {
                     }
                 }
             }
-
-            // Si il y a une pénalité en cours, la nouvelle commence le lendemain de la fin
             if (dateFin != null) {
                 dateDebutPenalite = dateFin.plusDays(1);
             }
         }
 
-        // Calculer le nombre de jours de retard
         long joursRetard = dateRetourPrevue.until(dateRetourReelle).getDays();
 
         Penalite p = new Penalite();
@@ -104,5 +95,16 @@ public class PenaliteService {
         p.setRaison(dto.getRaison());
 
         penaliteRepository.save(p);
+    }
+
+    public LocalDate getDateFinDernierePenalite(Integer adherentId) {
+        List<Penalite> penalites = penaliteRepository.findAll();
+        Penalite derniere = penalites.stream()
+                .filter(p -> p.getIdAdherent() != null && p.getIdAdherent().getId().equals(adherentId))
+                .max((p1, p2) -> p1.getDateDebut().compareTo(p2.getDateDebut()))
+                .orElse(null);
+
+        if (derniere == null) return null;
+        return derniere.getDateDebut().plusDays(derniere.getJour());
     }
 }

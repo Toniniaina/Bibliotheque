@@ -1,8 +1,10 @@
 package bibliotheque.services;
 
 import bibliotheque.entities.Emprunt;
+import bibliotheque.entities.Exemplaire;
 import bibliotheque.entities.MvtEmprunt;
 import bibliotheque.models.EmpruntDTO;
+import bibliotheque.models.ExemplaireDTO;
 import bibliotheque.repositories.EmpruntRepository;
 import bibliotheque.repositories.MvtEmpruntRepository;
 import lombok.AllArgsConstructor;
@@ -37,6 +39,20 @@ public class EmpruntService {
                 dto.setAdherentId(e.getIdEmprunt().getIdAdherent().getId());
                 dto.setAdherentNom(e.getIdEmprunt().getIdAdherent().getNom());
                 dto.setAdherentPrenom(e.getIdEmprunt().getIdAdherent().getPrenom());
+            }
+            // Ajout exemplaire/livre
+            if (e.getIdEmprunt() != null && e.getIdEmprunt().getIdExemplaire() != null) {
+                Exemplaire ex = e.getIdEmprunt().getIdExemplaire();
+                ExemplaireDTO exDto = new ExemplaireDTO();
+                exDto.setId(ex.getId());
+                exDto.setQuantite(ex.getQuantite());
+                if (ex.getIdLivre() != null) {
+                    exDto.setLivreId(ex.getIdLivre().getId());
+                    exDto.setLivreTitre(ex.getIdLivre().getTitre());
+                    dto.setLivreId(ex.getIdLivre().getId());
+                    dto.setLivreTitre(ex.getIdLivre().getTitre());
+                }
+                dto.setExemplaires(List.of(exDto));
             }
             return dto;
         }).collect(Collectors.toList());
@@ -82,7 +98,16 @@ public class EmpruntService {
                         dto.setAdherentNom(emp.getIdAdherent().getNom());
                         dto.setAdherentPrenom(emp.getIdAdherent().getPrenom());
                     }
-                    dto.setExemplaires(List.of(emp.getIdExemplaire()));
+                    // Correction : construire un ExemplaireDTO pour la liste
+                    Exemplaire ex = emp.getIdExemplaire();
+                    ExemplaireDTO exDto = new ExemplaireDTO();
+                    exDto.setId(ex.getId());
+                    exDto.setQuantite(ex.getQuantite());
+                    if (ex.getIdLivre() != null) {
+                        exDto.setLivreId(ex.getIdLivre().getId());
+                        exDto.setLivreTitre(ex.getIdLivre().getTitre());
+                    }
+                    dto.setExemplaires(List.of(exDto));
                     return dto;
                 })
                 .collect(Collectors.toList());
