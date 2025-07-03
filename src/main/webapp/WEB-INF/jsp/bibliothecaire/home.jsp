@@ -921,6 +921,10 @@
                 <i data-lucide="calendar"></i>
                 Abonnements
             </a>
+            <a href="${pageContext.request.contextPath}/penalite/create" class="nav-item ${pageName == 'penalite/create' ? 'active' : ''}" onclick="closeMobileMenu()">
+                <i data-lucide="calendar"></i>
+                Penalites
+            </a>
             <a href="${pageContext.request.contextPath}/dashboard" class="nav-item ${pageName == 'Dashboard' ? 'active' : ''}" onclick="closeMobileMenu()">
                 <i data-lucide="home"></i>
                 Tableau de bord
