@@ -22,7 +22,7 @@ public class UtilisateurService {
 
     public boolean signup(UtilisateurDto dto, boolean isAdherent) {
         if (utilisateurRepository.findByEmail(dto.getEmail()).isPresent()) {
-            return false; // email déjà utilisé
+            return false;
         }
         Utilisateur utilisateur = new Utilisateur();
         utilisateur.setEmail(dto.getEmail());

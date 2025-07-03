@@ -1,6 +1,7 @@
 package bibliotheque.controllers;
 
 import bibliotheque.models.UtilisateurDto;
+import bibliotheque.services.ProfilAdherentService;
 import bibliotheque.services.UtilisateurService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -11,11 +12,13 @@ import org.springframework.web.servlet.ModelAndView;
 @RequiredArgsConstructor
 public class AuthentificationController {
     private final UtilisateurService utilisateurService;
+    private final ProfilAdherentService profilAdherentService;
 
     @GetMapping("/signup")
     public ModelAndView signupForm() {
         ModelAndView mv = new ModelAndView("auth/signup");
         mv.addObject("utilisateurDto", new UtilisateurDto());
+        mv.addObject("profils", profilAdherentService.getAllProfils());
         return mv;
     }
 

@@ -27,10 +27,14 @@ public class AdherentService {
         adherent.setIdUtilisateur(utilisateur);
         adherent.setNom(dto.getNom());
         adherent.setPrenom(dto.getPrenom());
-        adherent.setTelephone(dto.getTelephone());
+        // adherent.setTelephone(dto.getTelephone());
         adherent.setDateInscription(dto.getDatecreation() != null ? dto.getDatecreation() : Instant.now().atZone(java.time.ZoneId.systemDefault()).toLocalDate());
         adherent.setDateNaissance(dto.getDatenaissance());
-        adherent.setIdProfil(new ProfilsAdherent() {{ setId(1); }});
+        ProfilsAdherent profil = new ProfilsAdherent();
+        profil.setId(dto.getIdProfilAdherent());
+        adherent.setIdProfil(profil);
+
         return adherentRepository.save(adherent);
     }
+
 }

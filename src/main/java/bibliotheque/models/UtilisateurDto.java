@@ -13,6 +13,7 @@ public class UtilisateurDto {
     private Integer idUtilisateur;
     private Bibliothecaire idBibliothecaire;
     private Adherent idAdherent;
+    private Integer idProfilAdherent;
     private String email;
     private String nom;
     private String prenom;

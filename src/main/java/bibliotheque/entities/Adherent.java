@@ -26,8 +26,8 @@ public class Adherent {
     @Column(name = "prenom", nullable = false, length = 100)
     private String prenom;
 
-    @Column(name = "telephone", length = 20)
-    private String telephone;
+    @Column(name = "date_naissance", nullable = false)
+    private LocalDate dateNaissance;
 
     @Column(name = "date_inscription", nullable = false)
     private LocalDate dateInscription;
@@ -35,8 +35,5 @@ public class Adherent {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_profil", nullable = false)
     private ProfilsAdherent idProfil;
-
-    @Column(name = "date_naissance")
-    private LocalDate dateNaissance;
 
 }
