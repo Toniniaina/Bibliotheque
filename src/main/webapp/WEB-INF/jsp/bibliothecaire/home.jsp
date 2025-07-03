@@ -916,6 +916,11 @@
         </div>
 
         <nav class="nav-menu">
+
+            <a href="${pageContext.request.contextPath}/abonnement/create" class="nav-item ${pageName == 'abonnement/create' ? 'active' : ''}" onclick="closeMobileMenu()">
+                <i data-lucide="calendar"></i>
+                Abonnements
+            </a>
             <a href="${pageContext.request.contextPath}/dashboard" class="nav-item ${pageName == 'Dashboard' ? 'active' : ''}" onclick="closeMobileMenu()">
                 <i data-lucide="home"></i>
                 Tableau de bord
@@ -948,6 +953,7 @@
                 <i data-lucide="settings"></i>
                 Paramètres
             </a>
+
         </nav>
 
         <form action="${pageContext.request.contextPath}/logout" method="post" style="position: absolute; bottom: 1.5rem; left: 1.5rem; right: 1.5rem;">
@@ -964,12 +970,27 @@
             <div class="breadcrumb">
                 <a href="${pageContext.request.contextPath}/dashboard">Accueil</a>
                 <i data-lucide="chevron-right"></i>
-                <span>${pageName != null ? pageName : 'Dashboard'}</span>
+                <span>
+                    <c:choose>
+                        <c:when test="${pageName == 'Dashboard' || pageName == null}">
+                            Dashboard
+                        </c:when>
+                        <c:when test="${pageName == '../abonnement/create'}">
+                            Abonnement
+                        </c:when>
+                        <c:otherwise>
+                            ${pageName}
+                        </c:otherwise>
+                    </c:choose>
+                </span>
             </div>
             <h1 class="header-title">
                 <c:choose>
-                    <c:when test="${pageName == 'Dashboard'}">
-                        Bonjour <c:out value="${user.prenom != null ? user.prenom : 'Utilisateur'}" /> !
+                    <c:when test="${pageName == 'Dashboard' || pageName == null}">
+                        Bonjour <c:out value="${user.prenom != null ? user.prenom : 'Utilisateur'}" />!
+                    </c:when>
+                    <c:when test="${pageName == '../abonnement/create'}">
+                        Abonnement
                     </c:when>
                     <c:otherwise>
                         ${pageName}
@@ -978,8 +999,11 @@
             </h1>
             <p class="header-subtitle">
                 <c:choose>
-                    <c:when test="${pageName == 'Dashboard'}">
+                    <c:when test="${pageName == 'Dashboard' || pageName == null}">
                         Voici un aperçu de l'activité de votre bibliothèque aujourd'hui
+                    </c:when>
+                    <c:when test="${pageName == '../abonnement/create'}">
+                        Gestion des abonnements
                     </c:when>
                     <c:when test="${not empty pageSubtitle}">
                         ${pageSubtitle}
@@ -1143,6 +1167,11 @@
                     </c:choose>
                 </section>
             </div>
+        </c:if>
+
+        <!-- Inclusion dynamique d'une page si pageName est défini et différent de Dashboard -->
+        <c:if test="${not empty pageName && pageName != 'Dashboard'}">
+            <jsp:include page="${pageName}.jsp" />
         </c:if>
 
         <!-- Contenu pour autres pages peut être ajouté ici -->

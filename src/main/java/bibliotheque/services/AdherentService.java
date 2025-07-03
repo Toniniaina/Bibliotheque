@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -35,6 +36,12 @@ public class AdherentService {
         adherent.setIdProfil(profil);
 
         return adherentRepository.save(adherent);
+    }
+    public List<Adherent> getAllAdherents() {
+        return adherentRepository.findAll();
+    }
+    public Adherent getAdherentById(Integer id) {
+        return adherentRepository.findById(id).orElse(null);
     }
 
 }
