@@ -15,6 +15,7 @@ import java.time.LocalDate;
 @Table(name = "reservations")
 public class Reservation {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_reservation", nullable = false)
     private Integer id;
 
@@ -27,10 +28,6 @@ public class Reservation {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "id_adherent", nullable = false)
     private Adherent idAdherent;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_statut", nullable = false)
-    private StatutsReservation idStatut;
 
     @Column(name = "date_demande", nullable = false)
     private Instant dateDemande;

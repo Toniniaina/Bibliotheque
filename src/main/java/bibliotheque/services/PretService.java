@@ -20,14 +20,20 @@ public class PretService {
     private final ExemplaireRepository exemplaireRepository;
     private final PenaliteService penaliteService;
     private final MvtEmpruntRepository mvtEmpruntRepository;
+    private final AbonnementRepository abonnementRepository;
 
     @Transactional
-    
     public void creerPret(EmpruntDTO dto, Instant datePret, Instant dateRetourPrevue) {
         Adherent adherent = adherentRepository.findById(dto.getAdherentId())
                 .orElseThrow(() -> new IllegalArgumentException("Adhérent introuvable."));
         Exemplaire exemplaire = exemplaireRepository.findById(dto.getExemplaires().get(0).getId())
                 .orElseThrow(() -> new IllegalArgumentException("Exemplaire introuvable."));
+        LocalDate datePretLocal = LocalDate.ofInstant(datePret, java.time.ZoneId.systemDefault());
+        boolean abonnementActif = abonnementRepository.findByIdAdherent_Id(adherent.getId()).stream()
+                .anyMatch(ab -> !ab.getDateDebut().isAfter(datePretLocal) && !ab.getDateFin().isBefore(datePretLocal));
+        if (!abonnementActif) {
+            throw new IllegalArgumentException("L'adhérent n'a pas d'abonnement actif à la date du prêt.");
+        }
 
         if (exemplaire.getQuantite() == null || exemplaire.getQuantite() <= 0) {
             throw new IllegalArgumentException("Aucun exemplaire disponible pour ce livre.");
@@ -43,7 +49,7 @@ public class PretService {
         if (empruntsEnCours >= quota) {
             throw new IllegalArgumentException("Quota d'emprunts simultanés atteint pour ce profil.");
         }
-        LocalDate dateDebutPret = LocalDate.ofInstant(datePret, java.time.ZoneId.systemDefault());
+        LocalDate dateDebutPret = datePretLocal;
         LocalDate dateFinDernierePenalite = penaliteService.getDateFinDernierePenalite(adherent.getId());
         if (dateFinDernierePenalite != null && !dateFinDernierePenalite.isBefore(dateDebutPret)) {
             throw new IllegalArgumentException("Cet adhérent a une pénalité en cours jusqu'au " + dateFinDernierePenalite + " et ne peut pas faire de prêt à la date demandée.");

@@ -53,10 +53,12 @@ public class AuthentificationController {
             mv = new ModelAndView("adherent/home");
             mv.addObject("user", user);
             mv.addObject("role", "adherent");
+            mv.addObject("pageName", "Dashboard"); // Correction : toujours fournir pageName
         } else {
             mv = new ModelAndView("bibliothecaire/home");
             mv.addObject("user", user);
             mv.addObject("role", "bibliothecaire");
+            mv.addObject("pageName", "Dashboard");
         }
         return mv;
     }
