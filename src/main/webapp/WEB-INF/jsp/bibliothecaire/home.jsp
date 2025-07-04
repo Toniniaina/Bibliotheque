@@ -929,9 +929,9 @@
                 <i data-lucide="home"></i>
                 Tableau de bord
             </a>
-            <a href="${pageContext.request.contextPath}/catalogue" class="nav-item ${pageName == 'Catalogue' ? 'active' : ''}" onclick="closeMobileMenu()">
+            <a href="${pageContext.request.contextPath}/prolongement/create" class="nav-item ${pageName == 'Catalogue' ? 'active' : ''}" onclick="closeMobileMenu()">
                 <i data-lucide="book"></i>
-                Catalogue
+                Prolongement
             </a>
             <a href="${pageContext.request.contextPath}/pret/create" class="nav-item ${pageName == 'pret/create' ? 'active' : ''}" onclick="closeMobileMenu()">
                 <i data-lucide="bookmark"></i>
