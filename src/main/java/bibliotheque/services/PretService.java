@@ -22,6 +22,7 @@ public class PretService {
     private final MvtEmpruntRepository mvtEmpruntRepository;
 
     @Transactional
+    
     public void creerPret(EmpruntDTO dto, Instant datePret, Instant dateRetourPrevue) {
         Adherent adherent = adherentRepository.findById(dto.getAdherentId())
                 .orElseThrow(() -> new IllegalArgumentException("Adhérent introuvable."));
