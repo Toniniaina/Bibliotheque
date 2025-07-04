@@ -10,5 +10,8 @@
         Vous êtes connecté en tant qu'<b>Adhérent</b>.
     </p>
     <a href="/logout">Déconnexion</a>
+    <c:if test="${not empty pageName}">
+        <jsp:include page="${pageName}.jsp" />
+    </c:if>
 </body>
 </html>
