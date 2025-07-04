@@ -7,8 +7,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${pageName != null ? pageName : 'Dashboard'} - BiblioSys</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/dashboard.css" />
+    <script src="${pageContext.request.contextPath}/static/js/lucide.min.js"></script>
     <style>
         :root {
             --primary-50: #eff6ff;
@@ -914,7 +914,7 @@
                 </c:choose>
             </div>
         </div>
-
+        <div>
         <nav class="nav-menu">
 
             <a href="${pageContext.request.contextPath}/abonnement/create" class="nav-item ${pageName == 'abonnement/create' ? 'active' : ''}" onclick="closeMobileMenu()">
@@ -924,10 +924,6 @@
             <a href="${pageContext.request.contextPath}/penalite/create" class="nav-item ${pageName == 'penalite/create' ? 'active' : ''}" onclick="closeMobileMenu()">
                 <i data-lucide="calendar"></i>
                 Penalites
-            </a>
-            <a href="${pageContext.request.contextPath}/dashboard" class="nav-item ${pageName == 'Dashboard' ? 'active' : ''}" onclick="closeMobileMenu()">
-                <i data-lucide="home"></i>
-                Tableau de bord
             </a>
             <a href="${pageContext.request.contextPath}/prolongement/create" class="nav-item ${pageName == 'Catalogue' ? 'active' : ''}" onclick="closeMobileMenu()">
                 <i data-lucide="book"></i>
@@ -941,63 +937,84 @@
                 <i data-lucide="bookmark"></i>
                 Reservations
             </a>
-            <a href="${pageContext.request.contextPath}/retours" class="nav-item ${pageName == 'Retours' ? 'active' : ''}" onclick="closeMobileMenu()">
+            <a href="${pageContext.request.contextPath}/rendrepret/create" class="nav-item ${pageName == 'rendrepret/create' ? 'active' : ''}" onclick="closeMobileMenu()">
                 <i data-lucide="clock"></i>
                 Retours
             </a>
-            <a href="${pageContext.request.contextPath}/acquisitions" class="nav-item ${pageName == 'Acquisitions' ? 'active' : ''}" onclick="closeMobileMenu()">
-                <i data-lucide="plus-circle"></i>
-                Acquisitions
-            </a>
-            <a href="${pageContext.request.contextPath}/statistiques" class="nav-item ${pageName == 'Statistiques' ? 'active' : ''}" onclick="closeMobileMenu()">
-                <i data-lucide="bar-chart"></i>
-                Statistiques
-            </a>
-            <a href="${pageContext.request.contextPath}/parametres" class="nav-item ${pageName == 'Parametres' ? 'active' : ''}" onclick="closeMobileMenu()">
-                <i data-lucide="settings"></i>
-                Paramètres
-            </a>
+
 
         </nav>
-
-        <form action="${pageContext.request.contextPath}/logout" method="post" style="position: absolute; bottom: 1.5rem; left: 1.5rem; right: 1.5rem;">
+        </div>
+        <div>
+            <form action="${pageContext.request.contextPath}/logout" method="post" style="position: absolute; bottom: 1.5rem; left: 1.5rem; right: 1.5rem;">
             <button type="submit" class="logout" onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
                 <i data-lucide="log-out"></i>
                 Déconnexion
             </button>
-        </form>
+            </form>
+        </div>
     </div>
+    <
 
     <!-- Main Content -->
     <div class="main-content">
         <div class="header fade-in">
             <div class="breadcrumb">
                 <a href="${pageContext.request.contextPath}/dashboard">Accueil</a>
-                <i data-lucide="chevron-right"></i>
-                <span>
-                    <c:choose>
-                        <c:when test="${pageName == 'Dashboard' || pageName == null}">
-                            Dashboard
-                        </c:when>
-                        <c:when test="${pageName == '../abonnement/create'}">
-                            Abonnement
-                        </c:when>
-                        <c:otherwise>
-                            ${pageName}
-                        </c:otherwise>
-                    </c:choose>
-                </span>
+                <c:if test="${not empty pageName && pageName != 'Dashboard' && pageName != null}">
+                    <i data-lucide="chevron-right"></i>
+                    <span>
+                        <c:choose>
+                            <c:when test="${pageName == '../rendrepret/create' || pageName == 'rendrepret/create'}">
+                                Gestion des retours
+                            </c:when>
+                            <c:when test="${pageName == '../abonnement/create' || pageName == 'abonnement/create'}">
+                                Abonnement
+                            </c:when>
+                            <c:when test="${pageName == '../penalite/create' || pageName == 'penalite/create'}">
+                                Penalites
+                            </c:when>
+                            <c:when test="${pageName == '../prolongement/create' || pageName == 'prolongement/create'}">
+                                Prolongement
+                            </c:when>
+                            <c:when test="${pageName == '../pret/create' || pageName == 'pret/create'}">
+                                Emprunts
+                            </c:when>
+                            <c:when test="${pageName == '../resa/valider' || pageName == 'resa/valider' || pageName == '/resa/a_valider'}">
+                                Reservations
+                            </c:when>
+                            <c:otherwise>
+                                <c:out value="${pageName}" />
+                            </c:otherwise>
+                        </c:choose>
+                    </span>
+                </c:if>
             </div>
             <h1 class="header-title">
                 <c:choose>
                     <c:when test="${pageName == 'Dashboard' || pageName == null}">
                         Bonjour <c:out value="${user.prenom != null ? user.prenom : 'Utilisateur'}" />!
                     </c:when>
-                    <c:when test="${pageName == '../abonnement/create'}">
+                    <c:when test="${pageName == '../rendrepret/create' || pageName == 'rendrepret/create'}">
+                        Gestion des retours
+                    </c:when>
+                    <c:when test="${pageName == '../abonnement/create' || pageName == 'abonnement/create'}">
                         Abonnement
                     </c:when>
+                    <c:when test="${pageName == '../penalite/create' || pageName == 'penalite/create'}">
+                        Penalites
+                    </c:when>
+                    <c:when test="${pageName == '../prolongement/create' || pageName == 'prolongement/create'}">
+                        Prolongement
+                    </c:when>
+                    <c:when test="${pageName == '../pret/create' || pageName == 'pret/create'}">
+                        Emprunts
+                    </c:when>
+                    <c:when test="${pageName == '../resa/valider' || pageName == 'resa/valider' || pageName == '/resa/a_valider'}">
+                        Reservations
+                    </c:when>
                     <c:otherwise>
-                        ${pageName}
+                        <c:out value="${pageName}" />
                     </c:otherwise>
                 </c:choose>
             </h1>
@@ -1005,6 +1022,9 @@
                 <c:choose>
                     <c:when test="${pageName == 'Dashboard' || pageName == null}">
                         Voici un aperçu de l'activité de votre bibliothèque aujourd'hui
+                    </c:when>
+                    <c:when test="${pageName == '../rendrepret/create'}">
+                        Gestion des retours d'emprunts
                     </c:when>
                     <c:when test="${pageName == '../abonnement/create'}">
                         Gestion des abonnements
@@ -1056,11 +1076,7 @@
                     <i data-lucide="user-plus"></i>
                     Nouvel adhérent
                 </a>
-                <a href="${pageContext.request.contextPath}/catalogue/ajouter" class="action-btn">
-                    <i data-lucide="book-plus"></i>
-                    Ajouter un livre
-                </a>
-                <a href="${pageContext.request.contextPath}/retours" class="action-btn">
+                <a href="${pageContext.request.contextPath}/rendrepret/create" class="action-btn">
                     <i data-lucide="book-minus"></i>
                     Gérer les retours
                 </a>

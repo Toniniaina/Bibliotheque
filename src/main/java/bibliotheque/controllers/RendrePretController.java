@@ -28,31 +28,34 @@ public class RendrePretController {
     public ModelAndView showForm() {
         ModelAndView mv = new ModelAndView("bibliothecaire/home");
         mv.addObject("pageName", "../rendrepret/create");
-        // Afficher uniquement les emprunts qui n'ont pas encore été rendus (dernier mouvement = 1)
+        // Afficher uniquement les emprunts dont le dernier mouvement est "emprunté" (id=1)
         var allEmpruntDTOs = empruntService.getAllEmpruntDTOs();
         var eligibleEmprunts = allEmpruntDTOs.stream().filter(dto -> {
             Emprunt emp = empruntRepository.findById(dto.getId()).orElse(null);
             if (emp == null) return false;
             var mvtList = mvtEmpruntRepository.findByIdEmpruntOrderByDateMouvementDesc(emp);
-            // Dernier mouvement doit être statut 1 (emprunté)
-            return mvtList != null && !mvtList.isEmpty() && mvtList.get(0).getIdStatutNouveau() != null && mvtList.get(0).getIdStatutNouveau().getId() == 1;
+            if (mvtList == null || mvtList.isEmpty()) return false;
+            // On prend le mouvement le plus récent (le premier de la liste)
+            var dernierMvt = mvtList.get(0);
+            return dernierMvt.getIdStatutNouveau() != null && dernierMvt.getIdStatutNouveau().getId() == 1;
         }).toList();
         mv.addObject("emprunts", eligibleEmprunts);
         return mv;
     }
 
     @PostMapping("/save")
-    public ModelAndView saveRetour(
+    public String saveRetour(
             @RequestParam("empruntId") Integer empruntId,
             @RequestParam("dateMouvement") String dateMouvementStr
     ) {
-        ModelAndView mv = new ModelAndView("bibliothecaire/home");
-        mv.addObject("pageName", "../rendrepret/create");
-        mv.addObject("emprunts", empruntService.getAllEmpruntDTOs());
-
+        // Traitement du retour (identique à avant)
         try {
             Emprunt emprunt = empruntRepository.findById(empruntId)
                     .orElseThrow(() -> new IllegalArgumentException("Emprunt introuvable"));
+            var mvtList = mvtEmpruntRepository.findByIdEmpruntOrderByDateMouvementDesc(emprunt);
+            if (mvtList == null || mvtList.isEmpty() || mvtList.get(0).getIdStatutNouveau() == null || mvtList.get(0).getIdStatutNouveau().getId() != 1) {
+                throw new IllegalArgumentException("Cet emprunt ne peut pas être rendu (déjà rendu ou non éligible).");
+            }
             Instant dateMouvement = parseDateTime(dateMouvementStr);
 
             MvtEmprunt mvt = new MvtEmprunt();
@@ -63,13 +66,13 @@ public class RendrePretController {
             mvt.setDateMouvement(dateMouvement);
             mvtEmpruntRepository.save(mvt);
 
-            mv.addObject("success", "Retour enregistré !");
-        } catch (DateTimeParseException e) {
-            mv.addObject("error", "Format de date invalide.");
+            // Ajoute un message flash si besoin (optionnel)
+            // redirectAttributes.addFlashAttribute("success", "Retour enregistré !");
         } catch (Exception e) {
-            mv.addObject("error", e.getMessage());
+            // redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
-        return mv;
+        // Redirige toujours vers la page de création (GET) pour éviter l'affichage de tous les emprunts
+        return "redirect:/rendrepret/create";
     }
 
     private Instant parseDateTime(String dateTimeStr) {
