@@ -3,10 +3,12 @@ package bibliotheque.services;
 import bibliotheque.entities.Emprunt;
 import bibliotheque.entities.Exemplaire;
 import bibliotheque.entities.MvtEmprunt;
+import bibliotheque.entities.Prolongement;
 import bibliotheque.models.EmpruntDTO;
 import bibliotheque.models.ExemplaireDTO;
 import bibliotheque.repositories.EmpruntRepository;
 import bibliotheque.repositories.MvtEmpruntRepository;
+import bibliotheque.repositories.ProlongementRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,9 +25,9 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class EmpruntService {
     private final MvtEmpruntRepository mvtEmpruntRepository;
-
     @Autowired
     private EmpruntRepository empruntRepository;
+    private final ProlongementRepository prolongementRepository;
 
     public List<MvtEmprunt> getAllEmprunts() {
         return mvtEmpruntRepository.findAll();
@@ -76,11 +78,24 @@ public class EmpruntService {
                         return false;
                     }
                     LocalDate dateRetourReelle = dernier.getDateMouvement().atZone(ZoneId.systemDefault()).toLocalDate();
-                    Instant dateRetourPrevueInstant = emp.getDateRetourPrevue();
-                    if (dateRetourPrevueInstant == null) {
-                        return false;
+
+                    // Prendre la date de fin de prolongement si elle existe, sinon la dateRetourPrevue de l'emprunt
+                    LocalDate dateRetourPrevue = null;
+                    var prolongements = prolongementRepository.findAll().stream()
+                        .filter(p -> p.getIdEmprunt().getId().equals(emp.getId()))
+                        .toList();
+                    if (!prolongements.isEmpty()) {
+                        // Prend le dernier prolongement (le plus récent)
+                        dateRetourPrevue = prolongements.stream()
+                            .map(Prolongement::getDateFin)
+                            .max(LocalDate::compareTo)
+                            .orElse(null);
                     }
-                    LocalDate dateRetourPrevue = dateRetourPrevueInstant.atZone(ZoneId.systemDefault()).toLocalDate();
+                    if (dateRetourPrevue == null && emp.getDateRetourPrevue() != null) {
+                        dateRetourPrevue = emp.getDateRetourPrevue().atZone(ZoneId.systemDefault()).toLocalDate();
+                    }
+                    if (dateRetourPrevue == null) return false;
+
                     boolean enRetard = dateRetourReelle.isAfter(dateRetourPrevue);
                     if (enRetard && !dejaAjoutes.contains(emp.getId())) {
                         dejaAjoutes.add(emp.getId());
@@ -98,7 +113,6 @@ public class EmpruntService {
                         dto.setAdherentNom(emp.getIdAdherent().getNom());
                         dto.setAdherentPrenom(emp.getIdAdherent().getPrenom());
                     }
-                    // Correction : construire un ExemplaireDTO pour la liste
                     Exemplaire ex = emp.getIdExemplaire();
                     ExemplaireDTO exDto = new ExemplaireDTO();
                     exDto.setId(ex.getId());
