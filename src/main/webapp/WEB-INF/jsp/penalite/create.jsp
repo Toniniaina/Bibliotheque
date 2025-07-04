@@ -33,7 +33,7 @@
                 <td class="border px-4 py-2">${e.id}</td>
                 <td class="border px-4 py-2">
                     <c:forEach var="ex" items="${e.exemplaires}">
-                        ${ex.idLivre.titre} (ID: ${ex.idLivre.id})<br/>
+                        ${ex.livreTitre} (ID: ${ex.livreId})<br/>
                     </c:forEach>
                 </td>
                 <td class="border px-4 py-2">${e.adherentNom} ${e.adherentPrenom} (ID: ${e.adherentId})</td>
