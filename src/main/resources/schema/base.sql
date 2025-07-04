@@ -219,4 +219,10 @@ VALUES (1, 1, NOW() - INTERVAL '10 days');
 INSERT INTO Mvt_Emprunt (id_emprunt, id_statut_nouveau, date_mouvement)
 VALUES (1, 3, NOW());
 
-
+CREATE TABLE Prolongements (
+    id_prolongement SERIAL PRIMARY KEY,
+    id_emprunt INT NOT NULL,
+    date_fin DATE NOT NULL,
+    date_prolongement DATE NOT NULL,
+    FOREIGN KEY (id_emprunt) REFERENCES Emprunts(id_emprunt) ON DELETE CASCADE
+);

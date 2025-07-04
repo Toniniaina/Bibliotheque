@@ -3,6 +3,7 @@ package bibliotheque.controllers;
 import bibliotheque.models.UtilisateurDto;
 import bibliotheque.services.ProfilAdherentService;
 import bibliotheque.services.UtilisateurService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -43,23 +44,37 @@ public class AuthentificationController {
     }
 
     @PostMapping("/login")
-    public ModelAndView loginSubmit(@ModelAttribute UtilisateurDto utilisateurDto) {
+    public ModelAndView loginSubmit(@ModelAttribute UtilisateurDto utilisateurDto, HttpSession session) {
         Object user = utilisateurService.login(utilisateurDto);
         ModelAndView mv;
         if (user == null) {
             mv = new ModelAndView("auth/login");
             mv.addObject("error", "Identifiants invalides.");
         } else if (user instanceof bibliotheque.entities.Adherent) {
+            session.setAttribute("user", user); // Stocke l'utilisateur en session
             mv = new ModelAndView("adherent/home");
             mv.addObject("user", user);
             mv.addObject("role", "adherent");
-            mv.addObject("pageName", "Dashboard"); // Correction : toujours fournir pageName
+            mv.addObject("pageName", "Dashboard");
         } else {
+            session.setAttribute("user", user); // Stocke le bibliothécaire en session
             mv = new ModelAndView("bibliothecaire/home");
             mv.addObject("user", user);
             mv.addObject("role", "bibliothecaire");
             mv.addObject("pageName", "Dashboard");
         }
         return mv;
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/login";
+    }
+
+    @PostMapping("/logout")
+    public String logoutPost(HttpSession session) {
+        session.invalidate();
+        return "redirect:/login";
     }
 }

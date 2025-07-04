@@ -933,13 +933,13 @@
                 <i data-lucide="book"></i>
                 Catalogue
             </a>
-            <a href="${pageContext.request.contextPath}/adherents" class="nav-item ${pageName == 'Adherents' ? 'active' : ''}" onclick="closeMobileMenu()">
-                <i data-lucide="users"></i>
-                Adhérents
-            </a>
-            <a href="${pageContext.request.contextPath}/emprunts" class="nav-item ${pageName == 'Emprunts' ? 'active' : ''}" onclick="closeMobileMenu()">
+            <a href="${pageContext.request.contextPath}/pret/create" class="nav-item ${pageName == 'pret/create' ? 'active' : ''}" onclick="closeMobileMenu()">
                 <i data-lucide="bookmark"></i>
                 Emprunts
+            </a>
+            <a href="${pageContext.request.contextPath}/resa/a_valider" class="nav-item ${pageName == '/resa/a_valider' ? 'active' : ''}" onclick="closeMobileMenu()">
+                <i data-lucide="bookmark"></i>
+                Reservations
             </a>
             <a href="${pageContext.request.contextPath}/retours" class="nav-item ${pageName == 'Retours' ? 'active' : ''}" onclick="closeMobileMenu()">
                 <i data-lucide="clock"></i>
