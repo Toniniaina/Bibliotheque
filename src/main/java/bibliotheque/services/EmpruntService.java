@@ -9,6 +9,7 @@ import bibliotheque.models.ExemplaireDTO;
 import bibliotheque.repositories.EmpruntRepository;
 import bibliotheque.repositories.MvtEmpruntRepository;
 import bibliotheque.repositories.ProlongementRepository;
+import bibliotheque.repositories.ValidationProlongementRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,9 +26,9 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class EmpruntService {
     private final MvtEmpruntRepository mvtEmpruntRepository;
-    @Autowired
     private EmpruntRepository empruntRepository;
     private final ProlongementRepository prolongementRepository;
+    private final ValidationProlongementRepository validationProlongementRepository;
 
     public List<MvtEmprunt> getAllEmprunts() {
         return mvtEmpruntRepository.findAll();
@@ -79,13 +80,20 @@ public class EmpruntService {
                     }
                     LocalDate dateRetourReelle = dernier.getDateMouvement().atZone(ZoneId.systemDefault()).toLocalDate();
 
-                    // Prendre la date de fin de prolongement si elle existe, sinon la dateRetourPrevue de l'emprunt
+                    // Ne prendre en compte que les prolongements validés
                     LocalDate dateRetourPrevue = null;
                     var prolongements = prolongementRepository.findAll().stream()
                         .filter(p -> p.getIdEmprunt().getId().equals(emp.getId()))
+                        .filter(p -> {
+                            // Vérifier les validations pour ce prolongement
+                            var validations = validationProlongementRepository.findByIdProlongement(p);
+                            return validations != null &&
+                                   !validations.isEmpty() &&
+                                   validations.stream().anyMatch(v -> v.getValide());
+                        })
                         .toList();
+
                     if (!prolongements.isEmpty()) {
-                        // Prend le dernier prolongement (le plus récent)
                         dateRetourPrevue = prolongements.stream()
                             .map(Prolongement::getDateFin)
                             .max(LocalDate::compareTo)

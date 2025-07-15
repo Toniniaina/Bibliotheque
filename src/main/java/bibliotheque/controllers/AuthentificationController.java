@@ -51,13 +51,13 @@ public class AuthentificationController {
             mv = new ModelAndView("auth/login");
             mv.addObject("error", "Identifiants invalides.");
         } else if (user instanceof bibliotheque.entities.Adherent) {
-            session.setAttribute("user", user); // Stocke l'utilisateur en session
+            session.setAttribute("user", user);
             mv = new ModelAndView("adherent/home");
             mv.addObject("user", user);
             mv.addObject("role", "adherent");
             mv.addObject("pageName", "Dashboard");
         } else {
-            session.setAttribute("user", user); // Stocke le bibliothécaire en session
+            session.setAttribute("user", user);
             mv = new ModelAndView("bibliothecaire/home");
             mv.addObject("user", user);
             mv.addObject("role", "bibliothecaire");
