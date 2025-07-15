@@ -60,15 +60,11 @@ public class PenaliteController {
         mv.addObject("pageName", "../penalite/create");
         mv.addObject("emprunts", empruntService.getRetardEmpruntDTOs());
         mv.addObject("adherents", adherentService.getAllAdherents());
-
-        // Liste des IDs des emprunts déjà pénalisés
         List<Integer> penalisedEmpruntIds = penaliteService.getAllPenalites().stream()
                 .map(p -> p.getIdEmprunt().getId())
                 .distinct()
                 .collect(Collectors.toList());
         mv.addObject("penalisedEmpruntIds", penalisedEmpruntIds);
-
-        // Conversion en chaîne pour utilisation avec fn:contains côté JSP
         mv.addObject("penalisedEmpruntIdsAsString", penalisedEmpruntIds.toString());
 
         if (feedbackMessage != null) {

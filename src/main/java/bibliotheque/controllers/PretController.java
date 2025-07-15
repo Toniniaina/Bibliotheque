@@ -94,7 +94,6 @@ public class PretController {
         }
 
         try {
-            // Handle datetime-local format (yyyy-MM-ddTHH:mm)
             LocalDateTime localDateTime = LocalDateTime.parse(dateTimeStr);
             return localDateTime.atZone(ZoneId.systemDefault()).toInstant();
         } catch (DateTimeParseException e) {

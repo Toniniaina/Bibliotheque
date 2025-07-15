@@ -226,3 +226,15 @@ CREATE TABLE Prolongements (
     date_prolongement DATE NOT NULL,
     FOREIGN KEY (id_emprunt) REFERENCES Emprunts(id_emprunt) ON DELETE CASCADE
 );
+create table validation_prolongement
+(
+    id_validation        serial primary key,
+    id_prolongement      integer not null
+        references prolongements(id_prolongement)
+            on delete cascade,
+    date_validation      date not null,
+    valide               boolean not null
+);
+
+alter table validation_prolongement
+    owner to postgres;

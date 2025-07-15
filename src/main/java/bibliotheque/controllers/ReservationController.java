@@ -34,7 +34,6 @@ public class ReservationController {
 
     @GetMapping("/create")
     public ModelAndView showResaForm(@RequestParam(value = "adherentId", required = false) Integer adherentId, HttpSession session) {
-        // Si pas d'adherentId dans l'URL, on tente de le récupérer depuis la session utilisateur
         if (adherentId == null) {
             Object user = session.getAttribute("user");
             if (user instanceof bibliotheque.entities.Adherent) {
@@ -42,7 +41,6 @@ public class ReservationController {
             }
         }
         if (adherentId == null) {
-            // Redirige vers login si aucun adhérent trouvé
             return new ModelAndView("redirect:/login");
         }
         ModelAndView mv = new ModelAndView("adherent/home");
@@ -95,7 +93,6 @@ public class ReservationController {
     public ModelAndView listReservationsAValider() {
         ModelAndView mv = new ModelAndView("bibliothecaire/home");
         mv.addObject("pageName", "../resa/valider");
-        // Récupérer les réservations dont le dernier mouvement a le statut "à valider" (id=1)
         var reservationsAValider = reservationRepository.findAll().stream()
             .filter(resa -> {
                 var mvt = mvtReservationRepository.findTopByIdReservationOrderByDateMouvementDesc(resa);
@@ -119,19 +116,15 @@ public class ReservationController {
 
             Livre livre = resa.getIdLivre();
             LocalDate dateResa = resa.getDateExpiration();
-
-            // Pour chaque exemplaire du livre, calcule la quantité restante à la date de réservation
             var exemplaires = exemplaireRepository.findAll().stream()
                 .filter(ex -> ex.getIdLivre().getId().equals(livre.getId()))
                 .toList();
 
             boolean exemplaireDispo = exemplaires.stream().anyMatch(ex -> {
                 int quantiteTotale = ex.getQuantite() != null ? ex.getQuantite() : 0;
-                // Compte les emprunts non rendus à la date de réservation
                 long empruntsOccupants = empruntRepository.findAll().stream()
                     .filter(emp -> emp.getIdExemplaire().getId().equals(ex.getId()))
                     .filter(emp -> {
-                        // Si la date de retour prévue est après la date de réservation, l'exemplaire est occupé
                         return emp.getDateRetourPrevue() != null &&
                                emp.getDateRetourPrevue().atZone(java.time.ZoneId.systemDefault()).toLocalDate().isAfter(dateResa.minusDays(1));
                     })
@@ -144,7 +137,6 @@ public class ReservationController {
                 throw new IllegalArgumentException("Aucun exemplaire n'est disponible à la date de réservation demandée.");
             }
 
-            // Si tout est OK, on valide la réservation
             MvtReservation mvt = new MvtReservation();
             mvt.setIdReservation(resa);
             mvt.setIdStatutNouveau(statutValide);
@@ -156,7 +148,6 @@ public class ReservationController {
             mv.addObject("error", e.getMessage());
         }
 
-        // Recharge la liste des réservations à valider
         var reservationsAValider = reservationRepository.findAll().stream()
             .filter(resa -> {
                 var mvt = mvtReservationRepository.findTopByIdReservationOrderByDateMouvementDesc(resa);

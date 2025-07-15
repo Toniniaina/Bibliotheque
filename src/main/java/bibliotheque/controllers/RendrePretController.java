@@ -28,14 +28,12 @@ public class RendrePretController {
     public ModelAndView showForm() {
         ModelAndView mv = new ModelAndView("bibliothecaire/home");
         mv.addObject("pageName", "../rendrepret/create");
-        // Afficher uniquement les emprunts dont le dernier mouvement est "emprunté" (id=1)
         var allEmpruntDTOs = empruntService.getAllEmpruntDTOs();
         var eligibleEmprunts = allEmpruntDTOs.stream().filter(dto -> {
             Emprunt emp = empruntRepository.findById(dto.getId()).orElse(null);
             if (emp == null) return false;
             var mvtList = mvtEmpruntRepository.findByIdEmpruntOrderByDateMouvementDesc(emp);
             if (mvtList == null || mvtList.isEmpty()) return false;
-            // On prend le mouvement le plus récent (le premier de la liste)
             var dernierMvt = mvtList.get(0);
             return dernierMvt.getIdStatutNouveau() != null && dernierMvt.getIdStatutNouveau().getId() == 1;
         }).toList();
@@ -48,7 +46,6 @@ public class RendrePretController {
             @RequestParam("empruntId") Integer empruntId,
             @RequestParam("dateMouvement") String dateMouvementStr
     ) {
-        // Traitement du retour (identique à avant)
         try {
             Emprunt emprunt = empruntRepository.findById(empruntId)
                     .orElseThrow(() -> new IllegalArgumentException("Emprunt introuvable"));
@@ -61,17 +58,14 @@ public class RendrePretController {
             MvtEmprunt mvt = new MvtEmprunt();
             mvt.setIdEmprunt(emprunt);
             StatutsEmprunt statutRetourne = new StatutsEmprunt();
-            statutRetourne.setId(2); // 2 = retourné
+            statutRetourne.setId(2);
             mvt.setIdStatutNouveau(statutRetourne);
             mvt.setDateMouvement(dateMouvement);
             mvtEmpruntRepository.save(mvt);
 
-            // Ajoute un message flash si besoin (optionnel)
-            // redirectAttributes.addFlashAttribute("success", "Retour enregistré !");
         } catch (Exception e) {
             // redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
-        // Redirige toujours vers la page de création (GET) pour éviter l'affichage de tous les emprunts
         return "redirect:/rendrepret/create";
     }
 

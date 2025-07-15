@@ -25,3 +25,15 @@ VALUES (1, 1, NOW() - INTERVAL '10 days');
 -- En retard
 INSERT INTO Mvt_Emprunt (id_emprunt, id_statut_nouveau, date_mouvement)
 VALUES (1, 3, NOW());
+create table validation_prolongement
+(
+    id_validation        serial primary key,
+    id_prolongement      integer not null
+        references prolongements(id_prolongement)
+            on delete cascade,
+    date_validation      date not null,
+    valide               boolean not null
+);
+
+alter table validation_prolongement
+    owner to postgres;

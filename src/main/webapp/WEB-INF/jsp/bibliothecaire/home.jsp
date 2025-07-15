@@ -925,7 +925,7 @@
                 <i data-lucide="calendar"></i>
                 Penalites
             </a>
-            <a href="${pageContext.request.contextPath}/prolongement/create" class="nav-item ${pageName == 'Catalogue' ? 'active' : ''}" onclick="closeMobileMenu()">
+            <a href="${pageContext.request.contextPath}/prolongement/validation" class="nav-item ${pageName == 'Catalogue' ? 'active' : ''}" onclick="closeMobileMenu()">
                 <i data-lucide="book"></i>
                 Prolongement
             </a>
