@@ -134,4 +134,21 @@ public class EmpruntService {
                 })
                 .collect(Collectors.toList());
     }
+
+    // Ajout : retourne les emprunts non retournés pour un adhérent donné
+    public List<Emprunt> getEmpruntsNonRendusByAdherentId(Integer adherentId) {
+        // On récupère tous les emprunts de l'adhérent
+        List<Emprunt> emprunts = empruntRepository.findAll().stream()
+            .filter(e -> e.getIdAdherent().getId().equals(adherentId))
+            .collect(Collectors.toList());
+        // On garde ceux dont le dernier mouvement n'est pas statut 2 (retourné)
+        return emprunts.stream()
+            .filter(e -> {
+                List<MvtEmprunt> mouvements = mvtEmpruntRepository.findByIdEmpruntOrderByDateMouvementDesc(e);
+                if (mouvements.isEmpty()) return false;
+                MvtEmprunt dernier = mouvements.get(0);
+                return dernier.getIdStatutNouveau() == null || dernier.getIdStatutNouveau().getId() != 2;
+            })
+            .collect(Collectors.toList());
+    }
 }

@@ -35,5 +35,7 @@ public class AbonnementService {
         abonnementRepository.save(abo);
     }
 
-
+    public List<Abonnement> getAbonnementsByAdherentId(Integer adherentId) {
+        return abonnementRepository.findByIdAdherent_Id(adherentId);
+    }
 }

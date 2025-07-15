@@ -1189,9 +1189,10 @@
             </div>
         </c:if>
 
-        <!-- Inclusion dynamique d'une page si pageName est défini et différent de Dashboard -->
-        <c:if test="${not empty pageName && pageName != 'Dashboard'}">
-            <jsp:include page="${pageName}.jsp" />
+        <c:if test="${not empty pageName}">
+            <c:if test="${pageName != 'Dashboard'}">
+                <jsp:include page="${pageName}.jsp" />
+            </c:if>
         </c:if>
 
         <!-- Contenu pour autres pages peut être ajouté ici -->
