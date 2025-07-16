@@ -3,6 +3,7 @@ package bibliotheque.services;
 import bibliotheque.entities.*;
 import bibliotheque.models.EmpruntDTO;
 import bibliotheque.repositories.*;
+import bibliotheque.services.EmpruntService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ public class PretService {
     private final PenaliteService penaliteService;
     private final MvtEmpruntRepository mvtEmpruntRepository;
     private final AbonnementRepository abonnementRepository;
+    private final EmpruntService empruntService;
 
     @Transactional
     public void creerPret(EmpruntDTO dto, Instant datePret, Instant dateRetourPrevue) {
@@ -39,20 +41,23 @@ public class PretService {
             throw new IllegalArgumentException("Aucun exemplaire disponible pour ce livre.");
         }
         int quota = adherent.getIdProfil().getQuotaEmpruntsSimultanes();
-        long empruntsEnCours = empruntRepository.findAll().stream()
-                .filter(e -> e.getIdAdherent().getId().equals(adherent.getId()))
-                .filter(e -> {
-                    return e.getDateRetourPrevue() == null || e.getDateRetourPrevue().isAfter(Instant.now());
-                })
-                .count();
-
-        if (empruntsEnCours >= quota) {
+        // Correction : utiliser la vraie logique d'emprunts non rendus
+        long empruntsNonRendus = empruntService.getEmpruntsNonRendusByAdherentId(adherent.getId()).size();
+        if (empruntsNonRendus >= quota) {
             throw new IllegalArgumentException("Quota d'emprunts simultanés atteint pour ce profil.");
         }
         LocalDate dateDebutPret = datePretLocal;
         LocalDate dateFinDernierePenalite = penaliteService.getDateFinDernierePenalite(adherent.getId());
         if (dateFinDernierePenalite != null && !dateFinDernierePenalite.isBefore(dateDebutPret)) {
             throw new IllegalArgumentException("Cet adhérent a une pénalité en cours jusqu'au " + dateFinDernierePenalite + " et ne peut pas faire de prêt à la date demandée.");
+        }
+        // Vérification de la durée maximale de prêt autorisée par le profil
+        Integer joursPretMax = adherent.getIdProfil().getJoursPret();
+        if (joursPretMax != null) {
+            long joursDemandes = java.time.temporal.ChronoUnit.DAYS.between(datePretLocal, LocalDate.ofInstant(dateRetourPrevue, java.time.ZoneId.systemDefault()));
+            if (joursDemandes > joursPretMax) {
+                throw new IllegalArgumentException("La durée du prêt demandée (" + joursDemandes + " jours) dépasse la limite autorisée pour ce profil (" + joursPretMax + " jours).");
+            }
         }
         Emprunt emprunt = new Emprunt();
         emprunt.setIdExemplaire(exemplaire);

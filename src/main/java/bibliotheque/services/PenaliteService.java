@@ -91,7 +91,18 @@ public class PenaliteService {
         p.setIdEmprunt(emprunt);
         p.setIdAdherent(dto.getAdherent());
         p.setDateDebut(dateDebutPenalite);
-        p.setJour(dto.getJour() != null ? dto.getJour() : (int) joursRetard);
+        // Utilisation automatique du nb_jour_penalite du profil adhérent si non fourni
+        Integer nbJourPenaliteProfil = null;
+        if (dto.getAdherent() != null && dto.getAdherent().getIdProfil() != null) {
+            nbJourPenaliteProfil = dto.getAdherent().getIdProfil().getNbJourPenalite();
+        }
+        if (dto.getJour() != null) {
+            p.setJour(dto.getJour());
+        } else if (nbJourPenaliteProfil != null && nbJourPenaliteProfil > 0) {
+            p.setJour(nbJourPenaliteProfil);
+        } else {
+            p.setJour((int) joursRetard);
+        }
         p.setRaison(dto.getRaison());
 
         penaliteRepository.save(p);

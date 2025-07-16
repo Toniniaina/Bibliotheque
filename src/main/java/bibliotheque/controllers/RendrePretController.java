@@ -6,6 +6,8 @@ import bibliotheque.entities.StatutsEmprunt;
 import bibliotheque.repositories.EmpruntRepository;
 import bibliotheque.repositories.MvtEmpruntRepository;
 import bibliotheque.services.EmpruntService;
+import bibliotheque.services.PenaliteService;
+import bibliotheque.models.PenaliteDTO;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
+import bibliotheque.repositories.JoursFeryRepository;
+import java.time.LocalDate;
 
 @Controller
 @AllArgsConstructor
@@ -23,6 +27,8 @@ public class RendrePretController {
     private final EmpruntRepository empruntRepository;
     private final MvtEmpruntRepository mvtEmpruntRepository;
     private final EmpruntService empruntService;
+    private final PenaliteService penaliteService;
+    private final JoursFeryRepository joursFeryRepository;
 
     @GetMapping("/create")
     public ModelAndView showForm() {
@@ -62,6 +68,24 @@ public class RendrePretController {
             mvt.setIdStatutNouveau(statutRetourne);
             mvt.setDateMouvement(dateMouvement);
             mvtEmpruntRepository.save(mvt);
+
+            // Gestion jours fériés : reporter la date limite si besoin
+            LocalDate dateLimite = null;
+            if (emprunt.getDateRetourPrevue() != null) {
+                dateLimite = emprunt.getDateRetourPrevue().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+                // Si la date limite tombe sur un jour férié, on la décale au prochain jour non férié
+                while (joursFeryRepository.existsById(dateLimite)) {
+                    dateLimite = dateLimite.plusDays(1);
+                }
+            }
+            // Pénalisation automatique si retard (après report jours fériés)
+            if (dateLimite != null && dateMouvement.atZone(java.time.ZoneId.systemDefault()).toLocalDate().isAfter(dateLimite)) {
+                PenaliteDTO penaliteDTO = new PenaliteDTO();
+                penaliteDTO.setEmprunt(emprunt);
+                penaliteDTO.setAdherent(emprunt.getIdAdherent());
+                penaliteDTO.setRaison("Retour en retard");
+                penaliteService.createPenalite(penaliteDTO);
+            }
 
         } catch (Exception e) {
             // redirectAttributes.addFlashAttribute("error", e.getMessage());
