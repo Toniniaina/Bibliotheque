@@ -2,12 +2,20 @@
 drop database if exists bibliotheque;
 create database bibliotheque;
 \c bibliotheque;
-
-CREATE TABLE Profils_Adherent (
-                                  id_profil SERIAL PRIMARY KEY,
-                                  nom_profil VARCHAR(100) NOT NULL UNIQUE,
-                                  quota_emprunts_simultanes INT NOT NULL DEFAULT 3
+create table profils_adherent
+(
+    id_profil                 serial
+        primary key,
+    nom_profil                varchar(100)      not null
+        unique,
+    quota_emprunts_simultanes integer default 3 not null,
+    jours_pret                integer,
+    reservation_livre         integer,
+    prolongement_pret         integer
 );
+
+alter table profils_adherent
+    owner to postgres;
 
 
 CREATE TABLE Auteurs (

@@ -41,20 +41,22 @@ public class ProlongementController {
             @RequestParam("empruntId") Integer empruntId,
             @RequestParam("dateFin") String dateFinStr
     ) {
-        ModelAndView mv = new ModelAndView("bibliothecaire/home");
+        ModelAndView mv = new ModelAndView("adherent/home");
         mv.addObject("pageName", "../prolongement/create");
-        mv.addObject("emprunts", empruntRepository.findAll());
+        // Filtrer les emprunts qui ne sont pas déjà retournés (statut 2)
+        mv.addObject("emprunts", empruntRepository.findAll().stream().filter(e -> {
+            var mvtList = mvtEmpruntRepository.findByIdEmpruntOrderByDateMouvementDesc(e);
+            if (mvtList == null || mvtList.isEmpty()) return true;
+            var dernierMvt = mvtList.get(0);
+            return dernierMvt == null || (dernierMvt.getIdStatutNouveau() != null && dernierMvt.getIdStatutNouveau().getId() != 2);
+        }).toList());
 
         try {
             Emprunt emprunt = empruntRepository.findById(empruntId)
                     .orElseThrow(() -> new IllegalArgumentException("Emprunt introuvable"));
             LocalDate dateFin = LocalDate.parse(dateFinStr);
 
-            Prolongement prolongement = new Prolongement();
-            prolongement.setIdEmprunt(emprunt);
-            prolongement.setDateFin(dateFin);
-            prolongement.setDateProlongement(LocalDate.now());
-            prolongementRepository.save(prolongement);
+            prolongementService.createProlongement(emprunt, dateFin);
 
             mv.addObject("success", "Prolongement enregistré !");
         } catch (Exception e) {

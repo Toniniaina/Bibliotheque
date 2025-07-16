@@ -39,6 +39,22 @@ public class ResrevationService {
             throw new IllegalArgumentException("Votre abonnement sera expiré à la date d'expiration de la réservation.");
         }
 
+        // Vérification du quota de réservation simultanée
+        Integer quotaResa = adherent.getIdProfil().getReservationLivre();
+        if (quotaResa != null) {
+            // On compte les réservations non validées (statut != 2)
+            long nbResaNonValide = reservationRepository.findAll().stream()
+                .filter(r -> r.getIdAdherent().getId().equals(adherentId))
+                .filter(r -> {
+                    MvtReservation mvt = mvtReservationRepository.findTopByIdReservationOrderByDateMouvementDesc(r);
+                    return mvt != null && (mvt.getIdStatutNouveau() == null || mvt.getIdStatutNouveau().getId() != 2);
+                })
+                .count();
+            if (nbResaNonValide >= quotaResa) {
+                throw new IllegalArgumentException("Quota de réservations simultanées atteint. Veuillez attendre la validation d'une réservation avant d'en créer une nouvelle.");
+            }
+        }
+
         StatutsReservation statut = statutsReservationRepository.findById(1)
                 .orElseThrow(() -> new IllegalArgumentException("Statut de réservation 'à valider' introuvable"));
 
