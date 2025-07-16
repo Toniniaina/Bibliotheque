@@ -1,5 +1,4 @@
--- 2. Création des tables de référence
-drop database if exists bibliotheque;
+
 create database bibliotheque;
 \c bibliotheque;
 create table profils_adherent
@@ -11,8 +10,12 @@ create table profils_adherent
     quota_emprunts_simultanes integer default 3 not null,
     jours_pret                integer,
     reservation_livre         integer,
-    prolongement_pret         integer
+    prolongement_pret         integer,
+    nb_jour_penalite          integer
 );
+
+alter table profils_adherent
+    owner to postgres;
 
 alter table profils_adherent
     owner to postgres;
@@ -65,17 +68,24 @@ CREATE TABLE Utilisateurs (
 );
 
 -- 4. Création des tables liées aux utilisateurs
-CREATE TABLE Adherents (
-                           id_adherent SERIAL PRIMARY KEY,
-                           id_utilisateur INT UNIQUE,
-                           nom VARCHAR(100) NOT NULL,
-                           prenom VARCHAR(100) NOT NULL,
-                           date_naissance  DATE NOT NULL,
-                           date_inscription DATE NOT NULL DEFAULT CURRENT_DATE,
-                           id_profil INT NOT NULL,
-                           FOREIGN KEY (id_utilisateur) REFERENCES Utilisateurs(id_utilisateur),
-                           FOREIGN KEY (id_profil) REFERENCES Profils_Adherent(id_profil)
+create table adherents
+(
+    id_adherent      serial
+        primary key,
+    id_utilisateur   integer
+        unique
+        references utilisateurs,
+    nom              varchar(100)              not null,
+    prenom           varchar(100)              not null,
+    date_naissance   date                      not null,
+    date_inscription date default CURRENT_DATE not null,
+    id_profil        integer                   not null
+        references profils_adherent,
+    "NUMAdherent"    varchar
 );
+
+alter table adherents
+    owner to postgres;
 
 CREATE TABLE Bibliothecaires (
                                  id_bibliothecaire SERIAL PRIMARY KEY,
@@ -206,27 +216,9 @@ INSERT INTO Statuts_Emprunt (code_statut) VALUES
                                               ('perdu');        -- id = 4
 INSERT INTO Type_emprunts (nom_type) VALUES ('Domicile'); -- id = 1
 -- Editeur
-INSERT INTO Editeurs (nom) VALUES ('Gallimard'); -- id = 1
 
--- Livre
-INSERT INTO Livres (titre, isbn, annee_publication, resume, id_editeur)
-VALUES ('Le Petit Prince', '9782070612758', 1943, 'Conte philosophique.', 1); -- id = 1
-
--- Exemplaire
-INSERT INTO Exemplaires (id_livre, quantite) VALUES (1, 5); -- id = 1
-INSERT INTO Emprunts (
-    id_exemplaire, id_adherent, id_type_emprunt, date_emprunt, date_retour_prevue
-) VALUES (
-             1, 6, 1, NOW() - INTERVAL '10 days', NOW() - INTERVAL '3 days'
-         ); -- id_emprunt = 1
--- Emprunté
-INSERT INTO Mvt_Emprunt (id_emprunt, id_statut_nouveau, date_mouvement)
-VALUES (1, 1, NOW() - INTERVAL '10 days');
 
 -- En retard
-INSERT INTO Mvt_Emprunt (id_emprunt, id_statut_nouveau, date_mouvement)
-VALUES (1, 3, NOW());
-
 CREATE TABLE Prolongements (
     id_prolongement SERIAL PRIMARY KEY,
     id_emprunt INT NOT NULL,
