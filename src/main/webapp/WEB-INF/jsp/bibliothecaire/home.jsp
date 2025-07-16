@@ -921,9 +921,9 @@
                 <i data-lucide="calendar"></i>
                 Abonnements
             </a>
-            <a href="${pageContext.request.contextPath}/penalite/create" class="nav-item ${pageName == 'penalite/create' ? 'active' : ''}" onclick="closeMobileMenu()">
+            <a href="${pageContext.request.contextPath}/adherent/list" class="nav-item ${pageName == 'adherent/list' ? 'active' : ''}" onclick="closeMobileMenu()">
                 <i data-lucide="calendar"></i>
-                Penalites
+                Adhernts
             </a>
             <a href="${pageContext.request.contextPath}/prolongement/validation" class="nav-item ${pageName == 'Catalogue' ? 'active' : ''}" onclick="closeMobileMenu()">
                 <i data-lucide="book"></i>
